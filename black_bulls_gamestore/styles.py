@@ -1,0 +1,15 @@
+COLOR_FONDO = "#0a0a0a"
+COLOR_PANEL = "#161616"
+COLOR_BORDE = "#2a2a2a"
+COLOR_DORADO = "#c9a227"
+COLOR_ROJO = "#8b1e1e"
+COLOR_TEXTO = "#f5f5f0"
+COLOR_TEXTO_SECUNDARIO = "#9a9a9a"
+
+FUENTE_TITULO = ("Segoe UI Black", 24)
+FUENTE_TITULO_MENU = ("Segoe UI Black", 16)
+FUENTE_SUBTITULO = ("Segoe UI", 18, "bold")
+FUENTE_CUERPO = ("Segoe UI", 11)
+FUENTE_CUERPO_SEMIBOLD = ("Segoe UI Semibold", 11)
+FUENTE_PEQUEÑA = ("Segoe UI", 10)
+FUENTE_BOTON = ("Segoe UI", 11, "bold")
