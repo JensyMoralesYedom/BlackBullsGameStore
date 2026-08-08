@@ -21,6 +21,7 @@ from styles import (
     FUENTE_CUERPO,
     FUENTE_PEQUEÑA,
 )
+from views.fondo import FondoLabel
 
 
 class LoginView(tk.Frame):
@@ -30,6 +31,9 @@ class LoginView(tk.Frame):
         self._construir()
 
     def _construir(self):
+        # Fondo con collage de portadas difuminado (Fase 7)
+        self._fondo = FondoLabel(self)
+
         tarjeta = tk.Frame(self, bg=COLOR_PANEL, bd=1, relief="solid")
         tarjeta.place(relx=0.5, rely=0.5, anchor="center", width=400, height=540)
 
@@ -118,6 +122,9 @@ class LoginView(tk.Frame):
         # Atajos: Enter desde cualquier entrada dispara login
         self.entrada_usuario.bind("<Return>", lambda _e: self._on_ingresar())
         self.entrada_clave.bind("<Return>", lambda _e: self._on_ingresar())
+
+        # Asegurar que el fondo quede detrás de la tarjeta
+        self._fondo.bajar()
 
     # --- helpers ---
 

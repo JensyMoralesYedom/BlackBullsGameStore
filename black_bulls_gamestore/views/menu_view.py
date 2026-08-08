@@ -25,6 +25,7 @@ from views.ajustes_view import AjustesView
 from views.biblioteca_view import BibliotecaView
 from views.comunidad_view import ComunidadView
 from views.descubrir_view import DescubrirView
+from views.fondo import FondoCanvas
 from views.tienda_view import TiendaView
 from views.widgets import generar_logo
 
@@ -55,36 +56,29 @@ class MenuView(tk.Frame):
         self._construir()
 
     def _construir(self):
-        # --- Sidebar ---
-        sidebar = tk.Frame(self, bg=COLOR_PANEL, width=230, highlightbackground=COLOR_BORDE, highlightthickness=1, bd=0)
-        sidebar.pack(side="left", fill="y")
-        sidebar.pack_propagate(False)
+        # --- Sidebar de vidrio esmerilado (collage + tinte + widgets incrustados) ---
+        self.sidebar = FondoCanvas(self, width=230)
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
+        self.sidebar.tintar(0, 0, 1, 1, (18, 18, 18, 190))
 
         # Logo "BB" generado por código (RF-r1: imagen en la pantalla principal)
         self._logo_img = generar_logo()
-        logo = tk.Label(sidebar, image=self._logo_img, bg=COLOR_PANEL)
-        logo.image = self._logo_img
-        logo.pack(pady=(24, 4))
+        self._logo_id = self.sidebar.create_image(115, 0, image=self._logo_img)
 
-        tk.Label(
-            sidebar,
-            text="BLACK BULLS",
-            font=FUENTE_TITULO_MENU,
-            bg=COLOR_PANEL,
-            fg=COLOR_DORADO,
-        ).pack(pady=(0, 2))
-
-        tk.Label(
-            sidebar,
-            text="GAMESTORE",
+        self._id_marca_bulls = self.sidebar.create_text(
+            115, 0, text="BLACK BULLS", font=FUENTE_TITULO_MENU, fill=COLOR_DORADO
+        )
+        self._id_marca_game = self.sidebar.create_text(
+            115, 0, text="GAMESTORE",
             font=(FUENTE_PEQUEÑA[0], FUENTE_PEQUEÑA[1], "bold"),
-            bg=COLOR_PANEL,
-            fg=COLOR_TEXTO_SECUNDARIO,
-        ).pack(pady=(0, 24))
+            fill=COLOR_TEXTO_SECUNDARIO,
+        )
 
+        self._ventanas = {}
         for clave, etiqueta in _SECCIONES:
             btn = tk.Button(
-                sidebar,
+                self.sidebar,
                 text=f"  {etiqueta}",
                 font=FUENTE_CUERPO,
                 bg=COLOR_PANEL,
@@ -96,13 +90,15 @@ class MenuView(tk.Frame):
                 cursor="hand2",
                 command=lambda c=clave: self._ir_a(c),
             )
-            btn.pack(fill="x", padx=12, pady=2, ipady=8)
             self._botones_seccion[clave] = btn
+            self._ventanas[clave] = self.sidebar.create_window(
+                115, 0, anchor="n", width=206, window=btn
+            )
             btn.bind("<Enter>", lambda _e, b=btn: self._hover(b, True))
             btn.bind("<Leave>", lambda _e, b=btn, c=clave: self._hover(b, self._seccion_actual == c))
 
         btn_cerrar = tk.Button(
-            sidebar,
+            self.sidebar,
             text="Cerrar sesión",
             font=FUENTE_BOTON,
             bg=COLOR_BORDE,
@@ -113,13 +109,18 @@ class MenuView(tk.Frame):
             cursor="hand2",
             command=self._cerrar_sesion,
         )
-        btn_cerrar.pack(side="bottom", fill="x", padx=16, pady=20, ipady=8)
+        self._id_cerrar = self.sidebar.create_window(
+            115, 0, anchor="s", width=198, window=btn_cerrar
+        )
 
-        # --- Contenido ---
-        self.contenido = tk.Frame(self, bg=COLOR_FONDO)
+        self.sidebar.bind("<Configure>", self._posicionar_sidebar, add="+")
+
+        # --- Contenido de vidrio esmerilado ---
+        self.contenido = FondoCanvas(self)
         self.contenido.pack(side="right", fill="both", expand=True)
+        self.contenido.tintar(0, 0, 1, 1, (16, 16, 16, 160))
 
-        # Header con saludo
+        # Header con saludo (franja opaca para legibilidad)
         self.header = tk.Frame(self.contenido, bg=COLOR_FONDO)
         self.header.pack(fill="x", padx=40, pady=(28, 8))
 
@@ -133,11 +134,28 @@ class MenuView(tk.Frame):
             fg=COLOR_TEXTO,
         ).pack(side="left")
 
-        # Cuerpo placeholder (cada sección lo reemplaza)
+        # Cuerpo: panel donde viven las vistas de sección (Fase 4)
         self.cuerpo = tk.Frame(self.contenido, bg=COLOR_PANEL, highlightbackground=COLOR_BORDE, highlightthickness=1, bd=0)
         self.cuerpo.pack(fill="both", expand=True, padx=40, pady=(8, 32))
 
+        self._posicionar_sidebar()
         self._ir_a("Descubrir")
+
+    def _posicionar_sidebar(self, _e=None):
+        """Reubica los elementos del sidebar al redimensionar."""
+        if not self._botones_seccion:
+            return
+        ancho = self.sidebar.winfo_width()
+        alto = max(self.sidebar.winfo_height(), 1)
+        x = ancho // 2
+        self.sidebar.coords(self._logo_id, x, int(alto * 0.07))
+        self.sidebar.coords(self._id_marca_bulls, x, int(alto * 0.17))
+        self.sidebar.coords(self._id_marca_game, x, int(alto * 0.215))
+        y = int(alto * 0.26)
+        for clave, _ in _SECCIONES:
+            self.sidebar.coords(self._ventanas[clave], x, y)
+            y += 40
+        self.sidebar.coords(self._id_cerrar, x, int(alto * 0.94))
 
     def _hover(self, boton, activo):
         if activo:

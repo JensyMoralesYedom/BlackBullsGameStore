@@ -69,7 +69,7 @@ Requerimientos derivados del diagnóstico (sección 1) y de la rúbrica de evalu
 - RNF-4 Sección activa resaltada en la navegación
 - RNF-5 Código modularizado (views / controllers / models / database)
 - RNF-6 Responsive mínimo: las fuentes siguen el tamaño del sistema y las vistas no se rompen al redimensionar
-- RNF-7 Sin dependencias externas (solo stdlib de Python)
+- RNF-7 Sin dependencias externas para el flujo normal (solo stdlib de Python); **Pillow solo se usa en runtime para el fondo esmerilado (Fase 7), decisión de diseño**
 - RNF-8 La app arranca y es testeable al final de cada fase
 - RNF-9 Entregable: archivo `.py` funcionando (rúbrica IV.1)
 
@@ -273,6 +273,28 @@ Cada fase es entregable por sí sola: al terminarla la app debe seguir arrancand
 - No se agregan dependencias de runtime a la app (sigue stdlib).
 
 **Dependencias**: Fases 1 a 5.
+
+### Fase 7 — Fondo de vidrio esmerilado
+
+**Objetivo**: poner una imagen medio transparente y borrosa de fondo (college de portadas difuminado) en toda la app, incluso bajo los paneles.
+
+**Decisiones de diseño**
+- Imagen: collage de las portadas reales, difuminado (`GaussianBlur` ~42) y mezclado ~28% sobre el negro del tema para el aspecto "semi-transparente".
+- "Bajo paneles": Tkinter no tiene widgets translúcidos; los paneles de vidrio esmerilado se logran dibujando collage + tintes RGBA en un **mismo `Canvas`** (el Tk compone el canal alfa). Los widgets interactivos quedan opacos por legibilidad.
+- Redimensionado: el fondo se **regenera en runtime** con Pillow en cada `Configure`, por lo que siempre llena la ventana sin bordes. Esto agrega Pillow como dependencia runtime (actualiza RNF-7).
+
+**Tareas**
+7.1. `utils/fondo.py`: collage borroso cacheado, `fondo_tk(ancho, alto)` a tamaño exacto y `tint_tk(...)` con RGBA.
+7.2. `views/fondo.py`: `FondoLabel` (fondo que llena un contenedor) y `FondoCanvas` (collage + tintes esmerilados, reubicados en resize).
+7.3. `LoginView` / `RegistroView`: collage detrás de la tarjeta central.
+7.4. `MenuView`: sidebar y área de contenido como paneles de vidrio esmerilado (`FondoCanvas`); los botones del sidebar se incrustan con `create_window` y se reubican en `_posicionar_sidebar`.
+
+**Criterios de aceptación**
+- Las tres pantallas muestran el fondo borroso semi-transparente y este se redibuja al redimensionar sin bordes.
+- El efecto esmerilado es visible bajo el sidebar y en los márgenes del área de contenido.
+- Los tests de Fases 2/4/5 siguen pasando (la navegación por `cuerpo` no cambia).
+
+**Dependencias**: Fases 1 a 6 (usa las portadas reales de la Fase 6).
 
 ---
 
