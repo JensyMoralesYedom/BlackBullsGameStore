@@ -76,6 +76,26 @@ class FondoCanvas(tk.Canvas):
             img = fondo_mod.tint_tk(w, h, rgba)
             self._tintes.append((self.create_image(x, y, anchor="nw", image=img), img))
 
+        # Asegurar orden de apilado: la imagen base debe quedar abajo, los
+        # tintes encima de la base, y todos los widgets (ventanas, logos,
+        # textos, etc.) deben estar por encima de los tintes para no quedar
+        # ocultos o borrosos. Recorremos los items y elevamos los que no son
+        # la base ni los tintes.
+        try:
+            base_id = self._id_base
+            tint_ids = [id_ for id_, _ in self._tintes]
+            all_ids = list(self.find_all())
+            for item in all_ids:
+                if item != base_id and item not in tint_ids:
+                    self.tag_raise(item)
+            # Asegurarnos de que la base permanezca en la parte inferior
+            if base_id is not None:
+                self.tag_lower(base_id)
+        except Exception:
+            # En caso de que aún no existan ids o durante el arranque, no
+            # detener el redibujado; la próxima invocación corregirá el orden.
+            pass
+
     def tintar(self, rx, ry, rw, rh, rgba=(22, 22, 22, 195)):
         """Agrega un panel de vidrio esmerilado en la zona dada (fracciones 0..1)."""
         self._zonas.append((rx, ry, rw, rh, rgba))
