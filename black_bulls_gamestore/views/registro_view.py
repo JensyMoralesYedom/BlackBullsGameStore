@@ -21,6 +21,7 @@ from styles import (
     FUENTE_CUERPO,
     FUENTE_PEQUEÑA,
 )
+from views.fondo import FondoLabel
 
 
 class RegistroView(tk.Frame):
@@ -30,6 +31,9 @@ class RegistroView(tk.Frame):
         self._construir()
 
     def _construir(self):
+        # Fondo con collage de portadas difuminado (Fase 7)
+        self._fondo = FondoLabel(self)
+
         tarjeta = tk.Frame(self, bg=COLOR_PANEL, highlightbackground=COLOR_BORDE, highlightthickness=1, bd=0)
         tarjeta.place(relx=0.5, rely=0.5, anchor="center", width=420, height=620)
 
@@ -95,6 +99,9 @@ class RegistroView(tk.Frame):
 
         for entrada in (self.entrada_usuario, self.entrada_correo, self.entrada_clave, self.entrada_confirmar):
             entrada.bind("<Return>", lambda _e: self._on_registrar())
+
+        # Asegurar que el fondo quede detrás de la tarjeta
+        self._fondo.bajar()
 
     def _crear_campo(self, master, texto_label, es_clave=False):
         wrapper = tk.Frame(master, bg=COLOR_PANEL)
