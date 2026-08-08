@@ -20,7 +20,6 @@ from styles import (
     FUENTE_BOTON,
     FUENTE_CUERPO,
     FUENTE_PEQUEÑA,
-    FUENTE_TITULO,
 )
 
 

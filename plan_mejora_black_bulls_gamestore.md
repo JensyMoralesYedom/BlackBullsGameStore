@@ -36,7 +36,46 @@ Un rediseño coherente con el nombre. En vez del púrpura genérico, algo con ca
 
 ---
 
-## 3. Arquitectura técnica (el cambio más importante)
+## 3. Requerimientos del análisis y rúbrica de evaluación
+
+Requerimientos derivados del diagnóstico (sección 1) y de la rúbrica de evaluación del proyecto final. Cada uno indica la fase que lo cumple. Nota de alcance: **el login/registro son un añadido al flujo; no cuentan como "pantalla principal" de la rúbrica**. La pantalla principal es el menú actual.
+
+**Requerimientos funcionales (RF)**
+
+- RF-1 Login valida credenciales contra la DB (`usuarios`) con hash → Fase 2
+- RF-2 Registro con validaciones (usuario no repetido, correo válido, claves coinciden) → Fase 2
+- RF-3 Sesión en memoria accesible por todas las vistas → Fase 2
+- RF-4 Tienda: juegos desde la DB, filtro por categoría y búsqueda por nombre, compra que inserta en `biblioteca` → Fase 4
+- RF-5 Biblioteca: solo los juegos del usuario logueado (JOIN por `usuario_id`) → Fase 4
+- RF-6 Descubrir: destacados leídos desde `juegos`, no hardcodeados → Fase 4
+- RF-7 Comunidad: reseñas/comentarios persistidos en SQLite → Fase 4
+- RF-8 Ajustes: datos del usuario actual y cambio de contraseña con validación → Fase 4
+- RF-9 Persistencia SQLite entre ejecuciones → Fase 1
+- RF-10 Datos de prueba (seed) para usuarios y juegos → Fase 1
+
+**Requerimientos de la rúbrica (RF-r)**
+
+- RF-r1 La pantalla principal (el menú actual) debe tener título, mensaje, **imagen** y botones (rúbrica I.1). Falta la imagen: hoy `assets/` está vacío.
+- RF-r2 Menú con mínimo 4 opciones coherentes (rúbrica II.1) — ya cumple con 5.
+- RF-r3 Imagen clara y de buen contraste en la pantalla principal (rúbrica I.3 y II.3).
+- RF-r4 Nombre "Black Bulls Gamestore" visible en la interfaz y en el código (rúbrica IV.2).
+- RF-r5 Layout simétrico y alineado en ambas pantallas (rúbrica III.1).
+
+**Requerimientos no funcionales (RNF)**
+
+- RNF-1 Errores visibles en pantalla (labels rojos), sin popups genéricos
+- RNF-2 Contraseñas nunca en texto plano (hash + salt)
+- RNF-3 Estilo consistente con la marca Black Bulls (paleta dorado/negro)
+- RNF-4 Sección activa resaltada en la navegación
+- RNF-5 Código modularizado (views / controllers / models / database)
+- RNF-6 Responsive mínimo: las fuentes siguen el tamaño del sistema y las vistas no se rompen al redimensionar
+- RNF-7 Sin dependencias externas (solo stdlib de Python)
+- RNF-8 La app arranca y es testeable al final de cada fase
+- RNF-9 Entregable: archivo `.py` funcionando (rúbrica IV.1)
+
+---
+
+## 4. Arquitectura técnica (el cambio más importante)
 
 Separar en módulos en vez de una clase gigante:
 
@@ -76,7 +115,7 @@ black_bulls_gamestore/
 
 ---
 
-## 4. Pantalla por pantalla: qué debe hacer cada una
+## 5. Pantalla por pantalla: qué debe hacer cada una
 
 ### Login
 - Validar contra la tabla `usuarios` (nombre + hash de contraseña, usar `hashlib` o `bcrypt`).
@@ -113,7 +152,7 @@ black_bulls_gamestore/
 
 ---
 
-## 5. Mejoras de UX que hoy faltan
+## 6. Mejoras de UX que hoy faltan
 
 - Loading/feedback: ningún botón da feedback visual al hacer clic (aparte del hover). Agregar un pequeño cambio de estado o ícono.
 - Manejo de errores visible en pantalla, no solo `messagebox.showinfo`.
@@ -122,16 +161,17 @@ black_bulls_gamestore/
 
 ---
 
-## 6. Plan de implementación por fases
+## 7. Plan de implementación por fases
 
 Cada fase es entregable por sí sola: al terminarla la app debe seguir arrancando y ser testeable. Las dependencias entre fases se indican al final de cada una.
 
-### Fase 1 — Base de datos y estructura
+###  Fase 1 — Base de datos y estructura
+
 
 **Objetivo**: tener la estructura modular y una base de datos persistente con datos de prueba, sin tocar la UI actual.
 
 **Tareas**
-1.1. Reorganizar el proyecto en el paquete `black_bulls_gamestore/` según el árbol de la sección 3 (`database/`, `models/`, `views/`, `controllers/`, `assets/`, `styles.py`, `main.py`).
+1.1. Reorganizar el proyecto en el paquete `black_bulls_gamestore/` según el árbol de la sección 4 (`database/`, `models/`, `views/`, `controllers/`, `assets/`, `styles.py`, `main.py`).
 1.2. Crear `database/db.py`:
 - Conexión SQLite (`sqlite3`) con la ruta `database/black_bulls.db`.
 - Función `crear_tablas()` con las tablas mínimas: `usuarios`, `juegos`, `biblioteca`, `carrito` (y `reseñas`, reservada para la Fase 4).
@@ -217,8 +257,25 @@ Cada fase es entregable por sí sola: al terminarla la app debe seguir arrancand
 
 **Dependencias**: Fases 1 a 4.
 
+### Fase 6 — Portadas de juegos
+
+**Objetivo**: que las tarjetas de Tienda, Descubrir y Biblioteca muestren la imagen de portada de cada juego, cumpliendo RF-r3 e IV.2 (imágenes en el código).
+
+**Tareas**
+6.1. Juegos reales: el seed usa títulos reales (Cyberpunk 2077, Elden Ring, God of War, Forza Horizon 5, Halo MCC, Age of Empires IV, Stardew Valley, Hades, The Witcher 3, Rocket League) con sus categorías y precios.
+6.2. `assets/descargar_portadas.py`: baja el `header.jpg` de cada juego desde el CDN de Steam y lo guarda recortado a 320x180 como PNG en `assets/juegos/`. `assets/generar_portadas.py` queda como respaldo: solo crea un placeholder si falta el archivo.
+6.3. `database/db.py`: el seed inserta `portada_path` para que una DB nueva desde cero quede completa.
+6.4. `views/widgets.py` (`TarjetaJuego`): muestra la portada reducida en la tarjeta; si el archivo falta, muestra un placeholder con la inicial.
+
+**Criterios de aceptación**
+- Las tarjetas de Tienda/Descubrir/Biblioteca muestran la portada de cada juego.
+- Una DB recién creada (`resetear_db`) ya trae las rutas de portada pobladas.
+- No se agregan dependencias de runtime a la app (sigue stdlib).
+
+**Dependencias**: Fases 1 a 5.
+
 ---
 
-## 7. Siguiente paso sugerido
+## 8. Siguiente paso sugerido
 
 Lo más eficiente es arrancar por la **Fase 1**, porque todo lo demás depende de tener la base de datos lista. Si querés, en el próximo mensaje puedo escribirte directamente el código de `database/db.py` con la creación de tablas y datos de prueba, o si preferís empezar por el rediseño visual del login con la nueva paleta, también podemos ir por ahí primero.

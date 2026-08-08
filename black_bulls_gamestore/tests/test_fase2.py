@@ -35,7 +35,6 @@ def test_flujo_fase2():
     print("[OK] Link 'Crear cuenta' lleva a RegistroView")
 
     # Llenar el formulario de registro y disparar
-    from views.registro_view import RegistroView
     rv = app._vista_actual
     rv.entrada_usuario.insert(0, "tester")
     rv.entrada_correo.insert(0, "tester@blackbulls.com")
@@ -44,7 +43,6 @@ def test_flujo_fase2():
     rv._on_registrar()
     _flush(root)
 
-    from views.menu_view import MenuView
     assert app._vista_actual.__class__.__name__ == "MenuView"
     from utils import session
     assert session.usuario_actual().nombre_usuario == "tester"

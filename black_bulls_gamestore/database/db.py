@@ -1,5 +1,6 @@
 import hashlib
 import os
+import re
 import secrets
 import sqlite3
 
@@ -60,16 +61,16 @@ USUARIOS_SEED = [
 ]
 
 JUEGOS_SEED = [
-    ("Cyberpunk Adventures", "Mundo abierto lleno de neon, misiones y graficos de ultima generacion.", 59.99, "Aventura"),
-    ("Toro Real Deluxe", "Simulador de arena y toros con modo carrera.", 39.99, "Deportes"),
-    ("Sombras del Toro", "RPG oscuro de accion en un reino asediado.", 49.99, "RPG"),
-    ("Neo Drift", "Carreras arcade con derrapes imposibles.", 29.99, "Carreras"),
-    ("Bastion Zero", "Shooter tactico por escuadrones.", 44.99, "Shooter"),
-    ("Granja en Llamas", "Estrategia y supervivencia cooperativa.", 24.99, "Estrategia"),
-    ("Pixel Bulls", "Plataformas retro con saltos precisos.", 9.99, "Indie"),
-    ("Arena de Campeones", "Combate en arenas con modo local.", 34.99, "Accion"),
-    ("Ruta 66 Racing", "Viaje por carretera en carreras arcade.", 19.99, "Carreras"),
-    ("El Ultimo Rebano", "Aventura narrativa sobre sobrevivir al apocalipsis.", 29.99, "Indie"),
+    ("Cyberpunk 2077", "Mundo abierto en Night City: ciberimplantes, neon y misiones que definen tu historia.", 49.99, "RPG"),
+    ("Elden Ring", "RPG de acción de mundo abierto firmado por FromSoftware.", 59.99, "RPG"),
+    ("God of War", "Kratos y Atreus en los reinos nórdicos: acción brutal y narrativa épica.", 39.99, "Accion"),
+    ("Forza Horizon 5", "Carreras arcade en el mundo abierto de México, lleno de eventos y personalización.", 59.99, "Carreras"),
+    ("Halo: The Master Chief Collection", "Seis campañas clásicas de Halo reunidas en un solo paquete.", 39.99, "Shooter"),
+    ("Age of Empires IV", "La saga de estrategia en tiempo real regresa con civilizaciones históricas.", 29.99, "Estrategia"),
+    ("Stardew Valley", "Simulador de granja con cientos de actividades, pueblos y secretos.", 14.99, "Indie"),
+    ("Hades", "Roguelike de acción con mitología griega y combate frenético.", 24.99, "Indie"),
+    ("The Witcher 3: Wild Hunt", "Aventura de rol épica en un continente en guerra, llena de decisiones.", 39.99, "Aventura"),
+    ("Rocket League", "Fútbol con coches: partidos rápidos, espectaculares y multijugador.", 19.99, "Deportes"),
 ]
 
 
@@ -84,6 +85,15 @@ def hash_password(clave):
     salt = secrets.token_hex(16)
     digest = hashlib.sha256((salt + clave).encode("utf-8")).hexdigest()
     return f"{salt}${digest}"
+
+
+def _slug(titulo):
+    """Nombre de archivo para la portada de un juego (Fase 6)."""
+    return re.sub(r"[^a-z0-9]+", "_", titulo.lower()).strip("_")
+
+
+def portada_relativa(titulo):
+    return f"assets/juegos/{_slug(titulo)}.png"
 
 
 def verificar_password(clave, password_hash):
@@ -113,8 +123,12 @@ def seed():
 
             if conn.execute("SELECT COUNT(*) FROM juegos").fetchone()[0] == 0:
                 conn.executemany(
-                    "INSERT INTO juegos (titulo, descripcion, precio, categoria) VALUES (?, ?, ?, ?)",
-                    JUEGOS_SEED,
+                    "INSERT INTO juegos (titulo, descripcion, precio, categoria, portada_path) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    [
+                        (titulo, descripcion, precio, categoria, portada_relativa(titulo))
+                        for titulo, descripcion, precio, categoria in JUEGOS_SEED
+                    ],
                 )
 
             if conn.execute("SELECT COUNT(*) FROM biblioteca").fetchone()[0] == 0:
@@ -124,7 +138,7 @@ def seed():
                 if demo:
                     filas = conn.execute(
                         "SELECT id FROM juegos WHERE titulo IN (?, ?)",
-                        ("Cyberpunk Adventures", "Neo Drift"),
+                        ("Stardew Valley", "Hades"),
                     ).fetchall()
                     for juego in filas:
                         conn.execute(

@@ -1,14 +1,11 @@
 """
-Vista de menú: sidebar con las cinco secciones y saludo al usuario.
-
-Es la versión mínima de Fase 2. La Fase 4 reemplaza el contenido central
-por las vistas reales (tienda, biblioteca, etc.). Por ahora cada botón
-muestra un messagebox — la diferencia es que la sidebar ya tiene la
-identidad Black Bulls y persiste la sesión en memoria.
+Vista de menú (pantalla principal): sidebar con las cinco secciones y logo,
+y un área central que conmuta entre las vistas de la Fase 4 sin recrear la
+ventana. Resalta la sección activa en dorado (RF-r2, RNF-4) y muestra el
+logo "BB" generado por código (RF-r1).
 """
 
 import tkinter as tk
-from tkinter import messagebox
 
 from utils import session
 from styles import (
@@ -24,6 +21,12 @@ from styles import (
     FUENTE_SUBTITULO,
     FUENTE_TITULO_MENU,
 )
+from views.ajustes_view import AjustesView
+from views.biblioteca_view import BibliotecaView
+from views.comunidad_view import ComunidadView
+from views.descubrir_view import DescubrirView
+from views.tienda_view import TiendaView
+from views.widgets import generar_logo
 
 
 _SECCIONES = [
@@ -33,6 +36,14 @@ _SECCIONES = [
     ("Comunidad", "Comunidad"),
     ("Ajustes", "Ajustes"),
 ]
+
+_VIEWS = {
+    "Descubrir": DescubrirView,
+    "Tienda": TiendaView,
+    "Biblioteca": BibliotecaView,
+    "Comunidad": ComunidadView,
+    "Ajustes": AjustesView,
+}
 
 
 class MenuView(tk.Frame):
@@ -49,13 +60,19 @@ class MenuView(tk.Frame):
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
 
+        # Logo "BB" generado por código (RF-r1: imagen en la pantalla principal)
+        self._logo_img = generar_logo()
+        logo = tk.Label(sidebar, image=self._logo_img, bg=COLOR_PANEL)
+        logo.image = self._logo_img
+        logo.pack(pady=(24, 4))
+
         tk.Label(
             sidebar,
             text="BLACK BULLS",
             font=FUENTE_TITULO_MENU,
             bg=COLOR_PANEL,
             fg=COLOR_DORADO,
-        ).pack(pady=(28, 2))
+        ).pack(pady=(0, 2))
 
         tk.Label(
             sidebar,
@@ -142,35 +159,9 @@ class MenuView(tk.Frame):
         for widget in self.cuerpo.winfo_children():
             widget.destroy()
 
-        etiqueta = dict(_SECCIONES).get(clave, clave)
-        tk.Label(
-            self.cuerpo,
-            text=f"{etiqueta}",
-            font=FUENTE_SUBTITULO,
-            bg=COLOR_PANEL,
-            fg=COLOR_DORADO,
-        ).pack(pady=(48, 4))
-        tk.Label(
-            self.cuerpo,
-            text="Disponible en la Fase 4 del proyecto.",
-            font=FUENTE_CUERPO,
-            bg=COLOR_PANEL,
-            fg=COLOR_TEXTO_SECUNDARIO,
-        ).pack()
-
-        boton = tk.Button(
-            self.cuerpo,
-            text="OK",
-            font=FUENTE_BOTON,
-            bg=COLOR_DORADO,
-            fg=COLOR_FONDO,
-            bd=0,
-            cursor="hand2",
-            command=lambda: messagebox.showinfo(
-                "Black Bulls", "Esta sección se completa en la Fase 4."
-            ),
-        )
-        boton.pack(pady=24, ipadx=18, ipady=6)
+        vista_cls = _VIEWS[clave]
+        vista = vista_cls(self.cuerpo, app=self.app)
+        vista.pack(fill="both", expand=True)
 
     def _cerrar_sesion(self):
         session.cerrar_sesion()
