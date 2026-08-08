@@ -6,6 +6,7 @@ Widgets reutilizables de la Fase 4:
 - generar_logo: monograma "BB" dorado sobre el fondo del sidebar (RF-r1).
 """
 
+import os
 import tkinter as tk
 
 from styles import (
@@ -13,18 +14,24 @@ from styles import (
     COLOR_DORADO,
     COLOR_FONDO,
     COLOR_PANEL,
-    COLOR_ROJO,
     COLOR_TEXTO,
     COLOR_TEXTO_SECUNDARIO,
     FUENTE_BOTON,
-    FUENTE_CUERPO,
     FUENTE_PEQUEÑA,
 )
+
+_PAQUETE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def vincular_hover(boton, normal, hover):
+    """Feedback visual de hover sobre un botón (Fase 5, punto 5.2)."""
+    boton.bind("<Enter>", lambda _e: boton.configure(bg=hover))
+    boton.bind("<Leave>", lambda _e: boton.configure(bg=normal))
+    return boton
 
 
 class ScrollableFrame(tk.Frame):
     """Contenedor con scroll vertical. Usar .contenido como área interior."""
-
     def __init__(self, master, bg=COLOR_FONDO):
         super().__init__(master, bg=bg)
         self.canvas = tk.Canvas(self, bg=bg, highlightthickness=0, bd=0)
@@ -75,6 +82,8 @@ class TarjetaJuego(tk.Frame):
             bd=0,
         )
         self.juego = juego
+
+        self._cargar_portada()
 
         tk.Label(
             self,
@@ -129,7 +138,7 @@ class TarjetaJuego(tk.Frame):
                 cursor="arrow",
             ).pack(fill="x", padx=14, pady=(14, 12), ipady=6)
         else:
-            tk.Button(
+            boton = tk.Button(
                 self,
                 text="COMPRAR",
                 font=FUENTE_BOTON,
@@ -140,7 +149,53 @@ class TarjetaJuego(tk.Frame):
                 bd=0,
                 cursor="hand2",
                 command=lambda: al_comprar(self.juego),
-            ).pack(fill="x", padx=14, pady=(14, 12), ipady=6)
+            )
+            boton.pack(fill="x", padx=14, pady=(14, 12), ipady=6)
+            vincular_hover(boton, COLOR_DORADO, "#a8861e")
+
+    def _cargar_portada(self):
+        """Muestra la portada del juego (tk.PhotoImage, sin dependencias) o un
+        placeholder con la inicial si el archivo no existe (Fase 6)."""
+        self._cover_img = None
+        ruta = self._ruta_absoluta_portada()
+        if ruta is not None:
+            try:
+                img = tk.PhotoImage(file=ruta)
+                factor = 1
+                while img.width() // factor > 260:
+                    factor += 1
+                if factor > 1:
+                    img = img.subsample(factor)
+                self._cover_img = img
+                tk.Label(self, image=img, bg=COLOR_PANEL).pack(fill="x", pady=(12, 0))
+                return
+            except tk.TclError:
+                self._cover_img = None
+        self._placeholder_portada()
+
+    def _ruta_absoluta_portada(self):
+        """Resuelve portada_path (relativo a la raíz del paquete) a ruta absoluta."""
+        if not self.juego.portada_path:
+            return None
+        return os.path.join(_PAQUETE_DIR, self.juego.portada_path)
+
+    def _placeholder_portada(self):
+        marco = tk.Frame(
+            self,
+            bg=COLOR_BORDE,
+            highlightbackground=COLOR_BORDE,
+            highlightthickness=1,
+            height=90,
+        )
+        marco.pack(fill="x", padx=14, pady=(12, 0))
+        marco.pack_propagate(False)
+        tk.Label(
+            marco,
+            text=self.juego.titulo[0].upper(),
+            font=("Segoe UI", 40, "bold"),
+            bg=COLOR_BORDE,
+            fg=COLOR_DORADO,
+        ).pack(expand=True)
 
 
 # --- Logo "BB" generado por código (RF-r1: imagen en la pantalla principal) ---

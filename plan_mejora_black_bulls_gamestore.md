@@ -257,6 +257,23 @@ Cada fase es entregable por sí sola: al terminarla la app debe seguir arrancand
 
 **Dependencias**: Fases 1 a 4.
 
+### Fase 6 — Portadas de juegos
+
+**Objetivo**: que las tarjetas de Tienda, Descubrir y Biblioteca muestren la imagen de portada de cada juego, cumpliendo RF-r3 e IV.2 (imágenes en el código).
+
+**Tareas**
+6.1. Juegos reales: el seed usa títulos reales (Cyberpunk 2077, Elden Ring, God of War, Forza Horizon 5, Halo MCC, Age of Empires IV, Stardew Valley, Hades, The Witcher 3, Rocket League) con sus categorías y precios.
+6.2. `assets/descargar_portadas.py`: baja el `header.jpg` de cada juego desde el CDN de Steam y lo guarda recortado a 320x180 como PNG en `assets/juegos/`. `assets/generar_portadas.py` queda como respaldo: solo crea un placeholder si falta el archivo.
+6.3. `database/db.py`: el seed inserta `portada_path` para que una DB nueva desde cero quede completa.
+6.4. `views/widgets.py` (`TarjetaJuego`): muestra la portada reducida en la tarjeta; si el archivo falta, muestra un placeholder con la inicial.
+
+**Criterios de aceptación**
+- Las tarjetas de Tienda/Descubrir/Biblioteca muestran la portada de cada juego.
+- Una DB recién creada (`resetear_db`) ya trae las rutas de portada pobladas.
+- No se agregan dependencias de runtime a la app (sigue stdlib).
+
+**Dependencias**: Fases 1 a 5.
+
 ---
 
 ## 8. Siguiente paso sugerido

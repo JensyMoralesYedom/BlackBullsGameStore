@@ -9,7 +9,6 @@ import tkinter as tk
 from models import biblioteca as biblioteca_model
 from utils import session
 from styles import (
-    COLOR_BORDE,
     COLOR_DORADO,
     COLOR_FONDO,
     COLOR_TEXTO_SECUNDARIO,
@@ -17,7 +16,7 @@ from styles import (
     FUENTE_PEQUEÑA,
     FUENTE_SUBTITULO,
 )
-from views.widgets import ScrollableFrame, TarjetaJuego
+from views.widgets import ScrollableFrame, TarjetaJuego, vincular_hover
 
 
 class BibliotecaView(tk.Frame):
@@ -93,7 +92,7 @@ class BibliotecaView(tk.Frame):
             fg=COLOR_TEXTO_SECUNDARIO,
         ).pack(pady=(6, 0))
 
-        tk.Button(
+        btn = tk.Button(
             marco,
             text="IR A LA TIENDA",
             font=FUENTE_CUERPO,
@@ -104,7 +103,9 @@ class BibliotecaView(tk.Frame):
             bd=0,
             cursor="hand2",
             command=self._ir_a_tienda,
-        ).pack(pady=(16, 0), ipadx=16, ipady=6)
+        )
+        btn.pack(pady=(16, 0), ipadx=16, ipady=6)
+        vincular_hover(btn, COLOR_DORADO, "#a8861e")
 
     def _ir_a_tienda(self):
         if self.app is not None and hasattr(self.app._vista_actual, "_ir_a"):

@@ -20,6 +20,7 @@ from styles import (
     FUENTE_PEQUEÑA,
     FUENTE_SUBTITULO,
 )
+from views.widgets import vincular_hover
 
 
 class AjustesView(tk.Frame):
@@ -107,7 +108,7 @@ class AjustesView(tk.Frame):
         )
         self.ok_clave.pack(anchor="w", padx=14)
 
-        tk.Button(
+        btn_guardar = tk.Button(
             self._panel_clave,
             text="GUARDAR NUEVA CONTRASEÑA",
             font=FUENTE_BOTON,
@@ -118,7 +119,9 @@ class AjustesView(tk.Frame):
             bd=0,
             cursor="hand2",
             command=self._cambiar_clave,
-        ).pack(anchor="w", padx=14, pady=(4, 12), ipadx=14, ipady=5)
+        )
+        btn_guardar.pack(anchor="w", padx=14, pady=(4, 12), ipadx=14, ipady=5)
+        vincular_hover(btn_guardar, COLOR_DORADO, "#a8861e")
 
         # --- Cerrar sesión ---
         tk.Button(

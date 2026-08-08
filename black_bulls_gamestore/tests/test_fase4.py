@@ -15,7 +15,6 @@ from main import App
 from models import biblioteca as biblioteca_model
 from models import juego as juego_model
 from utils import session
-from views.menu_view import MenuView
 
 
 def _flush(root):
@@ -54,13 +53,19 @@ def test_flujo_fase4():
     assert len(juegos) == 10, len(juegos)
     print(f"[OK] Tienda muestra {len(juegos)} juegos desde la DB")
 
+    # Portadas (Fase 6)
+    tarjetas = [w for w in tv.scroll.contenido.winfo_children() if hasattr(w, "_cover_img")]
+    assert len(tarjetas) == 10, f"esperaba 10 tarjetas con portada, hay {len(tarjetas)}"
+    assert all(t._cover_img is not None for t in tarjetas), "todas deben mostrar portada"
+    print("[OK] Las 10 tarjetas muestran su portada (Fase 6)")
+
     # Búsqueda por nombre
-    tv._var_busqueda.set("Neo")
+    tv._var_busqueda.set("Stardew")
     tv._refrescar()
     _flush(root)
     tarjetas = tv.scroll.contenido.winfo_children()
     assert len(tarjetas) == 1, f"esperaba 1 tarjeta, hay {len(tarjetas)}"
-    print("[OK] Búsqueda 'Neo' filtra a 1 resultado")
+    print("[OK] Búsqueda 'Stardew' filtra a 1 resultado")
 
     # Filtro por categoría
     tv._var_busqueda.set("")
@@ -97,7 +102,7 @@ def test_flujo_fase4():
     tarjetas = bv.scroll.contenido.winfo_children()
     ids_mostrados = {t.juego.id for t in tarjetas}
     assert candidato.id in ids_mostrados, "el juego comprado debe aparecer"
-    assert "Sombras del Toro" not in {t.juego.titulo for t in tarjetas}, "solo juegos del usuario"
+    assert "Forza Horizon 5" not in {t.juego.titulo for t in tarjetas}, "solo juegos del usuario"
     print(f"[OK] Biblioteca muestra {len(ids_mostrados)} juegos propios, sin juegos ajenos")
 
     # Estado vacío para un usuario sin compras

@@ -19,8 +19,9 @@ class App:
         self.root = root
         self.root.title("Black Bulls Gamestore")
         self.root.geometry("1000x640")
+        self.root.minsize(900, 660)
         self.root.configure(bg=COLOR_FONDO)
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
 
         self._vista_actual = None
 

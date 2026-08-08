@@ -21,7 +21,7 @@ from styles import (
     FUENTE_PEQUEÑA,
     FUENTE_SUBTITULO,
 )
-from views.widgets import ScrollableFrame
+from views.widgets import ScrollableFrame, vincular_hover
 
 
 class ComunidadView(tk.Frame):
@@ -104,7 +104,7 @@ class ComunidadView(tk.Frame):
         )
         self.label_error.pack(anchor="w", padx=14)
 
-        tk.Button(
+        btn_publicar = tk.Button(
             panel,
             text="PUBLICAR",
             font=FUENTE_BOTON,
@@ -115,7 +115,9 @@ class ComunidadView(tk.Frame):
             bd=0,
             cursor="hand2",
             command=self._publicar,
-        ).pack(anchor="w", padx=14, pady=(4, 12), ipadx=14, ipady=4)
+        )
+        btn_publicar.pack(anchor="w", padx=14, pady=(4, 12), ipadx=14, ipady=4)
+        vincular_hover(btn_publicar, COLOR_DORADO, "#a8861e")
 
         # --- Lista de reseñas ---
         self.scroll = ScrollableFrame(self, bg=COLOR_FONDO)
